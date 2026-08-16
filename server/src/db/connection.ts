@@ -4,13 +4,40 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.resolve(__dirname, "../../data");
-mkdirSync(DATA_DIR, { recursive: true });
+
+/**
+ * Pick a writable directory for the SQLite file.
+ *
+ * - `NEXUS_DB` (env) always wins when set — tests point it at a temp file.
+ * - On Vercel the project directory is read-only (only `/tmp` is writable), so
+ *   use `/tmp` there. It is ephemeral, but the app re-creates schema and demo
+ *   seed on every cold start (`createApp` → `createSchema`/`seedIfEmpty`).
+ * - Locally, keep the SQLite file under `server/data/` as before.
+ */
+function resolveDataDir(): string {
+  if (process.env.VERCEL) return "/tmp/nexus";
+  const dir = path.resolve(__dirname, "../../data");
+  try {
+    mkdirSync(dir, { recursive: true });
+    return dir;
+  } catch {
+    // Read-only filesystem (e.g. other serverless hosts): fall back to /tmp.
+    const tmp = "/tmp/nexus";
+    mkdirSync(tmp, { recursive: true });
+    return tmp;
+  }
+}
+
+const DATA_DIR = resolveDataDir();
 
 export const DB_PATH = process.env.NEXUS_DB || path.join(DATA_DIR, "nexus.db");
 
 const _db = new DatabaseSync(DB_PATH);
-_db.exec("PRAGMA journal_mode = WAL;");
+try {
+  _db.exec("PRAGMA journal_mode = WAL;");
+} catch {
+  // WAL is an optimization; some ephemeral filesystems reject it.
+}
 _db.exec("PRAGMA foreign_keys = ON;");
 
 export function db(): DatabaseSync {
