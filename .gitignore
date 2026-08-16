@@ -5,3 +5,4 @@ server/data/
 .scratch/
 *.log
 .DS_Store
+.vercel/
