@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { api, fmtInr, fmtDate, badgeFor, statusLabel, STAGE_LABELS } from "../lib/api";
 import { PageHeader, Card, DataTable, Badge, Modal, Field, type Column } from "../components/ui";
+import { ImportExport } from "./gn/shared";
 
 export default function Applications() {
   const nav = useNavigate();
@@ -65,7 +66,12 @@ export default function Applications() {
         title="Loan applications"
         sub={`${data.total} applications across ${data.stages?.length} workflow stages`}
         breadcrumb="LOS / Applications"
-        actions={<button className="btn btn-primary" onClick={() => setCreateOpen(true)}><Plus size={14} /> New application</button>}
+        actions={
+          <div className="flex items-center gap-2">
+            <ImportExport entity="los_apps" onImported={load} />
+            <button className="btn btn-primary" onClick={() => setCreateOpen(true)}><Plus size={14} /> New application</button>
+          </div>
+        }
       />
 
       <div className="flex gap-2 mb-4 overflow-x-auto pb-1">

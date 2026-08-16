@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Download, Link2, RefreshCcw, RotateCcw, FileInput, AlertTriangle } from "lucide-react";
 import { api, fmtInr, fmtDateTime, badgeFor } from "../lib/api";
 import { PageHeader, Card, Badge, Stat, Tabs, Drawer, KV } from "../components/ui";
+import { ImportExport } from "./gn/shared";
 
 const RECON_STATUSES = ["matched", "unmatched", "duplicate", "failed", "reversed", "requires_review"];
 
@@ -74,24 +75,27 @@ export default function Payments() {
         sub="Receipts, allocation, bank-statement reconciliation and exception resolution"
         breadcrumb="LMS / Payments"
         actions={
-          <button className="btn btn-secondary" disabled={importing} onClick={async () => {
-            setImporting(true);
-            try {
-              await act(async () => api("/recon/import", {
-                method: "POST",
-                body: {
-                  source: "HDFC Demo Statement",
-                  transactions: [
-                    { txn_date: new Date().toISOString().slice(0, 10), amount: 15400, mode: "NEFT", reference: "DEMO-IMP-001", payer_name: "Nexus Demo" },
-                    { txn_date: new Date().toISOString().slice(0, 10), amount: 22000, mode: "UPI", reference: "DEMO-IMP-002", payer_name: "Nexus Demo" },
-                    { txn_date: new Date().toISOString().slice(0, 10), amount: 9800, mode: "NEFT", reference: "DEMO-IMP-003", payer_name: "Nexus Demo" }
-                  ]
-                }
-              }), "Bank statement imported & auto-matched");
-            } finally { setImporting(false); }
-          }}>
-            <FileInput size={13} /> {importing ? "Importing…" : "Simulate bank import"}
-          </button>
+          <div className="flex items-center gap-2">
+            <ImportExport entity="payments" />
+            <button className="btn btn-secondary" disabled={importing} onClick={async () => {
+              setImporting(true);
+              try {
+                await act(async () => api("/recon/import", {
+                  method: "POST",
+                  body: {
+                    source: "HDFC Demo Statement",
+                    transactions: [
+                      { txn_date: new Date().toISOString().slice(0, 10), amount: 15400, mode: "NEFT", reference: "DEMO-IMP-001", payer_name: "Nexus Demo" },
+                      { txn_date: new Date().toISOString().slice(0, 10), amount: 22000, mode: "UPI", reference: "DEMO-IMP-002", payer_name: "Nexus Demo" },
+                      { txn_date: new Date().toISOString().slice(0, 10), amount: 9800, mode: "NEFT", reference: "DEMO-IMP-003", payer_name: "Nexus Demo" }
+                    ]
+                  }
+                }), "Bank statement imported & auto-matched");
+              } finally { setImporting(false); }
+            }}>
+              <FileInput size={13} /> {importing ? "Importing…" : "Simulate bank import"}
+            </button>
+          </div>
         }
       />
 

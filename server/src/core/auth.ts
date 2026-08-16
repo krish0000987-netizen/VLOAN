@@ -56,24 +56,25 @@ export const ROLES: Record<string, string[]> = {
     "dashboard.view", "leads.*", "customers.*", "applications.*", "credit.*", "bre.*",
     "underwriting.*", "loans.*", "payments.*", "collections.*", "recovery.*",
     "sanctions.*", "kfs.*", "compliance.*", "audit.view", "reports.*", "ai.*",
-    "admin.users", "admin.products", "admin.rules", "admin.integrations", "admin.tenants"
+    "admin.users", "admin.products", "admin.rules", "admin.integrations", "admin.tenants",
+    "gn.*"
   ],
   branch_admin: [
     "dashboard.view", "leads.*", "customers.*", "applications.*", "credit.view", "credit.fetch",
     "bre.view", "underwriting.view", "loans.view", "payments.view", "payments.record",
-    "collections.*", "sanctions.view", "kfs.view", "reports.view", "ai.view"
+    "collections.*", "sanctions.view", "kfs.view", "reports.view", "ai.view", "gn.view", "gn.applications.edit"
   ],
-  sales_manager: ["dashboard.view", "leads.*", "customers.view", "customers.edit", "applications.view", "applications.create", "reports.view", "ai.view"],
+  sales_manager: ["dashboard.view", "leads.*", "customers.view", "customers.edit", "applications.view", "applications.create", "reports.view", "ai.view", "gn.view", "gn.applications.edit"],
   telecaller: ["dashboard.view", "leads.view", "leads.edit", "leads.convert", "customers.view"],
   field_executive: ["dashboard.view", "leads.view", "leads.edit", "customers.view", "applications.view", "applications.create", "collections.view"],
   credit_analyst: ["dashboard.view", "applications.view", "applications.edit", "applications.advance", "credit.*", "bre.view", "bre.simulate", "underwriting.*", "kfs.view", "ai.view"],
-  credit_manager: ["dashboard.view", "applications.*", "credit.*", "bre.view", "underwriting.*", "sanctions.*", "kfs.*", "approvals.decide", "loans.edit", "payments.reverse", "recovery.approve", "reports.view", "ai.view"],
+  credit_manager: ["dashboard.view", "applications.*", "credit.*", "bre.view", "underwriting.*", "sanctions.*", "kfs.*", "approvals.decide", "loans.edit", "payments.reverse", "recovery.approve", "reports.view", "ai.view", "gn.view", "gn.applications.edit"],
   underwriter: ["dashboard.view", "applications.view", "credit.*", "bre.view", "bre.simulate", "underwriting.*", "kfs.view", "ai.view"],
-  operations: ["dashboard.view", "applications.view", "applications.edit", "applications.advance", "documents.*", "sanctions.view", "kfs.view", "agreements.*", "loans.view", "disbursements.*", "payments.view", "payments.record"],
+  operations: ["dashboard.view", "applications.view", "applications.edit", "applications.advance", "documents.*", "sanctions.view", "kfs.view", "agreements.*", "loans.view", "disbursements.*", "payments.view", "payments.record", "gn.view", "gn.applications.edit"],
   collection_manager: ["dashboard.view", "loans.view", "collections.*", "recovery.*", "payments.view", "payments.record", "reports.view", "ai.view"],
   collection_agent: ["dashboard.view", "collections.view", "collections.edit", "payments.record", "customers.view", "loans.view"],
-  dsa: ["dashboard.view", "leads.view", "leads.create", "leads.edit", "applications.view", "applications.create"],
-  finance: ["dashboard.view", "loans.view", "loans.edit", "payments.*", "disbursements.view", "reports.view", "audit.view"],
+  dsa: ["dashboard.view", "leads.view", "leads.create", "leads.edit", "applications.view", "applications.create", "gn.view", "gn.applications.edit"],
+  finance: ["dashboard.view", "loans.view", "loans.edit", "payments.*", "disbursements.view", "reports.view", "audit.view", "gn.*"],
   auditor: ["dashboard.view", "audit.view", "loans.view", "customers.view", "compliance.view", "reports.view", "payments.view"],
   compliance_officer: ["dashboard.view", "customers.view", "compliance.*", "audit.view", "kyc.*", "consents.*", "complaints.*", "applications.view", "kfs.view", "reports.view"],
   customer_support: ["dashboard.view", "customers.view", "complaints.*", "leads.view", "loans.view", "payments.view"],

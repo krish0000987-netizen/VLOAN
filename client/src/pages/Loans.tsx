@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, fmtInr, fmtDate } from "../lib/api";
 import { PageHeader, Card, DataTable, Badge, type Column } from "../components/ui";
+import { ImportExport } from "./gn/shared";
 
 const BUCKETS = [
   ["", "All"], ["0", "0 DPD"], ["1-30", "1–30"], ["31-60", "31–60"], ["61-90", "61–90"], ["90+", "90+"]
@@ -50,7 +51,9 @@ export default function Loans() {
 
   return (
     <div>
-      <PageHeader title="Loan accounts" sub={`${data.total} loans · full servicing lifecycle from disbursement to closure`} breadcrumb="LMS / Loans" />
+      <PageHeader title="Loan accounts" sub={`${data.total} loans · full servicing lifecycle from disbursement to closure`} breadcrumb="LMS / Loans" actions={
+        <div className="flex items-center gap-2"><ImportExport entity="loans" /></div>
+      } />
 
       <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
         {BUCKETS.map(([v, label]) => (

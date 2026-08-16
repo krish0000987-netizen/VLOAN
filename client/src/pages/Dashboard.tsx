@@ -4,6 +4,7 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContai
 import { Landmark, Wallet, FileText, TrendingUp, ShieldCheck, ArrowRight, AlertTriangle } from "lucide-react";
 import { api, fmtInr, timeAgo, badgeFor, statusLabel } from "../lib/api";
 import { Card, CardTitle, Stat, EmptyState } from "../components/ui";
+import { ImportExport } from "./gn/shared";
 
 const CITIES: Record<string, [number, number]> = {
   "Maharashtra": [72.87, 19.08], "Delhi": [77.1, 28.7], "Karnataka": [77.59, 12.97], "Tamil Nadu": [80.27, 13.08],
@@ -57,7 +58,10 @@ export default function Dashboard() {
           <h1 className="text-[19px] font-semibold tracking-tight text-zinc-900">Executive Dashboard</h1>
           <p className="text-[12.5px] text-zinc-500 mt-1">Live portfolio health across all lending operations</p>
         </div>
-        <button className="btn btn-secondary" onClick={() => nav("/reports")}>Full reports <ArrowRight size={13} /></button>
+        <div className="flex items-center gap-2">
+          <ImportExport entity="customers" /><ImportExport entity="loans" /><ImportExport entity="payments" />
+          <button className="btn btn-secondary" onClick={() => nav("/reports")}>Full reports <ArrowRight size={13} /></button>
+        </div>
       </div>
 
       {/* KPI row */}

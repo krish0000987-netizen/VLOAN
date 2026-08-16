@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Phone, PhoneCall, PhoneOff, Clock } from "lucide-react";
 import { api, fmtInr, fmtDate, timeAgo } from "../lib/api";
 import { PageHeader, Card, Stat, Badge, Modal, Field } from "../components/ui";
+import { ImportExport } from "./gn/shared";
 
 export default function Telecall() {
   const nav = useNavigate();
@@ -30,7 +31,7 @@ export default function Telecall() {
 
   return (
     <div>
-      <PageHeader title="Telecalling workspace" sub="Prioritized lead queue for outbound conversion" breadcrumb="CRM / Telecalling" />
+      <PageHeader title="Telecalling workspace" sub="Prioritized lead queue for outbound conversion" breadcrumb="CRM / Telecalling" actions={<div className="flex items-center gap-2"><ImportExport entity="core_leads" /></div>} />
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
         <Stat label="In queue" value={s.total} icon={<Phone size={16} />} />

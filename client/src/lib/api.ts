@@ -86,7 +86,8 @@ export const STATUS_STYLE: Record<string, string> = {
   not_configured: "badge-gray", error: "badge-red", medium: "badge-amber", high: "badge-red",
   critical: "badge-red", low: "badge-green", standard: "badge-blue", superseded: "badge-gray",
   retired: "badge-gray", cancelled: "badge-gray", expired: "badge-gray", withdrawn: "badge-gray",
-  closed_loan: "badge-zinc", approved_wc: "badge-green", send_back: "badge-amber"
+  closed_loan: "badge-zinc", approved_wc: "badge-green", send_back: "badge-amber",
+  inactive: "badge-gray", scheduled: "badge-blue", zinc: "badge-zinc", indigo: "badge-indigo"
 };
 
 export function badgeFor(status: string | null | undefined): string {

@@ -13,6 +13,13 @@ import { reconRouter } from "./routes/recon.js";
 import { portalRouter } from "./routes/portal.js";
 import { channelRouter } from "./routes/channel.js";
 import { collectionsRouter } from "./routes/collections.js";
+import { gnRouter } from "./routes/gn.js";
+import { gnAdminRouter } from "./routes/gn-admin.js";
+import { gnPipelineRouter, gnWebhookRouter } from "./routes/gn-pipeline.js";
+import { gnFinanceRouter } from "./routes/gn-finance.js";
+import { gnCoRouter } from "./routes/gn-co.js";
+import { gnBulkRouter } from "./routes/gn-bulk.js";
+import { gnApiRouter } from "./routes/gn-api.js";
 import { analyticsRouter } from "./routes/analytics.js";
 import { adminRouter } from "./routes/admin.js";
 import { errorHandler } from "./middleware.js";
@@ -30,6 +37,9 @@ export function createApp() {
   app.get("/api/health", (_req, res) => res.json({ status: "ok", service: "nexus-api", environment: "DEMO" }));
 
   app.use("/api/auth", authRouter);
+  // Public lender webhooks — must mount before the auth-guarded routers (router-level guards
+  // apply to every /api request that passes through them).
+  app.use("/api", gnWebhookRouter);
   app.use("/api", analyticsRouter);
   app.use("/api", crmRouter);
   app.use("/api", losExtrasRouter);
@@ -40,6 +50,13 @@ export function createApp() {
   app.use("/api", portalRouter);
   app.use("/api", channelRouter);
   app.use("/api", collectionsRouter);
+  app.use("/api", gnRouter);
+  app.use("/api", gnAdminRouter);
+  app.use("/api", gnPipelineRouter);
+  app.use("/api", gnFinanceRouter);
+  app.use("/api", gnCoRouter);
+  app.use("/api", gnBulkRouter);
+  app.use("/api", gnApiRouter);
   app.use("/api/admin", adminRouter);
 
   app.use(errorHandler);

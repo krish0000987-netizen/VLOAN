@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, fmtInr, fmtDate } from "../lib/api";
 import { PageHeader, Card, CardTitle, Badge, DataTable, type Column, Stat } from "../components/ui";
+import { ImportExport } from "./gn/shared";
 
 export default function CreditRisk() {
   const nav = useNavigate();
@@ -29,7 +30,7 @@ export default function CreditRisk() {
 
   return (
     <div>
-      <PageHeader title="Credit & risk" sub="Bureau insight, early warning signals and fraud surveillance" breadcrumb="Credit" />
+      <PageHeader title="Credit & risk" sub="Bureau insight, early warning signals and fraud surveillance" breadcrumb="Credit" actions={<div className="flex items-center gap-2"><ImportExport entity="loans" /><ImportExport entity="customers" /></div>} />
 
       {risk && (
         <>

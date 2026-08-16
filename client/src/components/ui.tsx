@@ -66,9 +66,9 @@ export function Tabs({ items, active, onChange }: { items: { key: string; label:
   );
 }
 
-export function Field({ label, children, className = "" }: { label: string; children: ReactNode; className?: string }) {
+export function Field({ label, children, className = "", span }: { label: string; children: ReactNode; className?: string; span?: number }) {
   return (
-    <div className={className}>
+    <div className={className} style={span ? { gridColumn: `span ${span}` } : undefined}>
       <label className="label">{label}</label>
       {children}
     </div>

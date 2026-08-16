@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { getUserFromToken, hasPermission, type SessionUser } from "./core/auth.js";
+import { hasGnPerm } from "./core/gn.js";
 
 export interface AuthedRequest extends Request {
   user?: SessionUser;
@@ -19,7 +20,14 @@ export function authRequired(req: AuthedRequest, res: Response, next: NextFuncti
 
 export function requirePerm(perm: string) {
   return (req: AuthedRequest, res: Response, next: NextFunction) => {
-    if (!req.user || !hasPermission(req.user, perm)) {
+    // GN permissions resolve through the admin-toggable role-permission grid;
+    // everything else keeps the built-in role map untouched.
+    const allowed = req.user
+      ? perm.startsWith("gn.")
+        ? hasGnPerm(req.user.tenant_id, req.user.role, perm)
+        : hasPermission(req.user, perm)
+      : false;
+    if (!allowed) {
       res.status(403).json({ error: `Permission denied: ${perm}` });
       return;
     }

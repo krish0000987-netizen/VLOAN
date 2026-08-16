@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, fmtDate, fmtDateTime } from "../lib/api";
 import { PageHeader, Card, CardTitle, Badge, Tabs, Stat, Modal, Field } from "../components/ui";
+import { ImportExport, AnyFileImport, SchemeForm } from "./gn/shared";
 
 export default function Compliance() {
   const [data, setData] = useState<any>(null);
@@ -9,14 +10,29 @@ export default function Compliance() {
   const [complaint, setComplaint] = useState<any>({ category: "Service", priority: "medium", subject: "", description: "" });
   const [customers, setCustomers] = useState<any[]>([]);
 
+  // Scheme compliance state
+  const [schemes, setSchemes] = useState<any[]>([]);
+  const [files, setFiles] = useState<any[]>([]);
+  const [schemeMsg, setSchemeMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
   const load = () => api("/admin/compliance").then(setData);
-  useEffect(() => { load(); api("/customers?limit=100").then((r) => setCustomers(r.rows)); }, []);
+  const loadSchemes = () => api("/gn/schemes").then(setSchemes).catch(() => setSchemes([]));
+  const loadFiles = () => api("/gn/scheme-files").then(setFiles).catch(() => setFiles([]));
+  useEffect(() => { load(); api("/customers?limit=100").then((r) => setCustomers(r.rows)); loadSchemes(); loadFiles(); }, []);
 
   if (!data) return null;
 
+  const today = new Date().toISOString().slice(0, 10);
+  const schemeStatus = (s: any) => {
+    if (s.status === "inactive" || s.status === "blocked") return { badge: s.status, note: "Not accepting applications" };
+    if (s.effective_to && s.effective_to < today) return { badge: "expired", note: `Expired ${fmtDate(s.effective_to)}` };
+    if (s.effective_from && s.effective_from > today) return { badge: "scheduled", note: `Effective ${fmtDate(s.effective_from)}` };
+    return { badge: "active", note: `Live since ${s.effective_from ? fmtDate(s.effective_from) : "—"}` };
+  };
+
   return (
     <div>
-      <PageHeader title="Compliance Center" sub="KYC · AML · Consent · KFS · Grievance — India-focused compliance-control framework" breadcrumb="Compliance" />
+      <PageHeader title="Compliance Center" sub="KYC · AML · Consent · KFS · Schemes · Grievance — India-focused compliance-control framework" breadcrumb="Compliance" />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <Stat label="KYC verified" value={data.kycStats?.verified ?? 0} tone="green" />
@@ -27,10 +43,115 @@ export default function Compliance() {
 
       <Tabs active={tab} onChange={setTab} items={[
         { key: "rules", label: "Compliance rules", count: data.rules?.length },
+        { key: "schemes", label: "Scheme compliance", count: schemes.length },
         { key: "consents", label: "Consents", count: data.consents?.length },
         { key: "kyc", label: "KYC records", count: data.kyc?.length },
         { key: "complaints", label: "Grievances", count: data.complaints?.length }
       ]} />
+
+      {tab === "schemes" && (
+        <div className="space-y-4">
+          {/* Add your scheme here — banker form, integrated directly into the Compliance dashboard */}
+          <Card>
+            <CardTitle title="Add your scheme here" sub="Banker scheme form — publish a scheme live to the feed, matcher and this compliance register" right={schemeMsg ? <span className={`text-[11px] font-semibold ${schemeMsg.ok ? "text-emerald-600" : "text-rose-600"}`}>{schemeMsg.text}</span> : null} />
+            <SchemeForm compact onSaved={() => { setSchemeMsg({ ok: true, text: "Scheme published & registered for compliance tracking" }); loadSchemes(); loadFiles(); }} />
+          </Card>
+
+          {/* Scheme documents — bank circulars & policy files uploaded in any format */}
+          <Card>
+            <CardTitle title="Scheme documents" sub="Bank circulars & policy files uploaded in any format — PDF, Excel, image, CSV — retained for compliance review" right={
+              <div className="flex items-center gap-2">
+                <AnyFileImport entity="schemes" onImported={loadFiles} />
+              </div>
+            } />
+            {files.length === 0 ? (
+              <div className="text-[12px] text-zinc-400 py-8 text-center">No scheme documents yet. Upload a bank circular (PDF / Excel / image) — it is stored here for review.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-[12px]">
+                  <thead><tr className="border-b border-zinc-200 text-zinc-400 text-left">
+                    <th className="th">Document</th><th className="th">Scheme / Lender</th><th className="th">Kind</th><th className="th">Size</th><th className="th">Uploaded</th><th className="th">Status</th><th className="th"></th>
+                  </tr></thead>
+                  <tbody>
+                    {files.map((f: any) => (
+                      <tr key={f.id} className="border-b border-zinc-50 hover:bg-zinc-50/40">
+                        <td className="td">
+                          <div className="font-medium text-zinc-800">{f.filename}</div>
+                          <div className="text-[10.5px] text-zinc-400">{f.mime || "—"}</div>
+                        </td>
+                        <td className="td text-zinc-600">{f.scheme_name || "—"}{f.lender_name ? ` · ${f.lender_name}` : ""}</td>
+                        <td className="td capitalize text-zinc-500">{f.kind || "—"}</td>
+                        <td className="td text-zinc-500">{f.size ? `${(f.size / 1024).toFixed(1)} KB` : "—"}</td>
+                        <td className="td text-zinc-500">{fmtDateTime(f.created_at)}</td>
+                        <td className="td"><Badge status={f.status === "pending_review" ? "amber" : "green"} />{f.notes && <div className="text-[10px] text-zinc-400 mt-0.5">{f.notes}</div>}</td>
+                        <td className="td">
+                          <div className="flex gap-1 justify-end">
+                            {f.has_content && <a className="btn btn-secondary btn-sm" href={`/api/gn/scheme-files/${f.id}/download`} download>Download</a>}
+                            <button className="btn btn-secondary btn-sm" onClick={async () => { if (!confirm(`Delete ${f.filename}?`)) return; await api(`/gn/scheme-files/${f.id}`, { method: "DELETE" }); loadFiles(); }}>Delete</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+
+          <Card>
+            <CardTitle title="Scheme compliance register" sub="Every lender scheme with effective dates, policy and product eligibility — versioned and audit-logged" right={
+              <div className="flex items-center gap-2">
+                <ImportExport entity="schemes" onImported={loadSchemes} />
+              </div>
+            } />
+            {schemes.length === 0 ? (
+              <div className="text-[12px] text-zinc-400 py-8 text-center">No schemes registered yet. Use “Add scheme” or import a CSV.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-[12px]">
+                  <thead><tr className="border-b border-zinc-200 text-zinc-400 text-left">
+                    <th className="th">Scheme</th><th className="th">Bank / Lender</th><th className="th">Profile</th><th className="th">Loan range</th><th className="th">ROI</th><th className="th">Commission</th><th className="th">Effective</th><th className="th">Policy</th><th className="th">Status</th>
+                  </tr></thead>
+                  <tbody>
+                    {schemes.map((s: any) => {
+                      const st = schemeStatus(s);
+                      let lp: any = {}, el: any = {}, pol: any = {};
+                      try { lp = JSON.parse(s.loan_params || "{}"); } catch { }
+                      try { el = JSON.parse(s.eligibility || "{}"); } catch { }
+                      try { pol = JSON.parse(s.policy || "{}"); } catch { }
+                      return (
+                        <tr key={s.id} className="border-b border-zinc-50 hover:bg-zinc-50/40">
+                          <td className="td">
+                            <div className="font-medium text-zinc-800">{s.name}</div>
+                            <div className="text-[10.5px] text-zinc-400">{s.product_name || s.product_category || "—"}</div>
+                          </td>
+                          <td className="td text-zinc-600">{s.lender_name}</td>
+                          <td className="td capitalize text-zinc-600">{s.profile || "—"}</td>
+                          <td className="td text-zinc-600">{lp.min_amount || lp.max_amount ? `₹${(lp.min_amount ?? 0).toLocaleString("en-IN")} – ₹${(lp.max_amount ?? "—").toLocaleString("en-IN")}` : "—"}</td>
+                          <td className="td text-zinc-600">{lp.roi_min != null ? `${lp.roi_min}–${lp.roi_max ?? "—"}%` : "—"}</td>
+                          <td className="td num font-semibold">{s.commission_pct ?? s.rate ?? 0}%</td>
+                          <td className="td text-zinc-500">{s.effective_from ? fmtDate(s.effective_from) : "—"}{s.effective_to ? ` → ${fmtDate(s.effective_to)}` : ""}</td>
+                          <td className="td">
+                            <div className="flex flex-wrap gap-1">
+                              {pol.cibil_required && <Badge status="indigo">CIBIL req.</Badge>}
+                              {(pol.negative_list?.length ?? 0) > 0 && <Badge status="critical">Negative list ({pol.negative_list.length})</Badge>}
+                              {el.max_ltv != null && <Badge status="zinc">LTV ≤ {el.max_ltv}%</Badge>}
+                              {el.min_credit_score != null && <Badge status="zinc">Score ≥ {el.min_credit_score}</Badge>}
+                              {el.max_foir != null && <Badge status="zinc">FOIR ≤ {el.max_foir}%</Badge>}
+                              {!pol.cibil_required && !(pol.negative_list?.length) && el.max_ltv == null && el.min_credit_score == null && <span className="text-zinc-300 text-[11px]">No policy configured</span>}
+                            </div>
+                          </td>
+                          <td className="td"><Badge status={st.badge} /> <div className="text-[10px] text-zinc-400 mt-0.5">{st.note}</div></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
 
       {tab === "rules" && (
         <Card>
@@ -116,7 +237,7 @@ export default function Compliance() {
                     <Badge status={c.priority} />
                     <span className="text-[12px] text-zinc-500">{c.subject}</span>
                   </div>
-                  <div className="text-[11px] text-zinc-400 mt-0.5">{c.customer_name || "—"} · {c.category} · {fmtDate(c.created_at)} · SLA {c.sla_hours}h{c.c.resolved_at ? ` · resolved ${fmtDate(c.resolved_at)}` : ""}</div>
+                  <div className="text-[11px] text-zinc-400 mt-0.5">{c.customer_name || "—"} · {c.category} · {fmtDate(c.created_at)} · SLA {c.sla_hours}h{c.resolved_at ? ` · resolved ${fmtDate(c.resolved_at)}` : ""}</div>
                   {c.resolution && <div className="text-[11px] text-zinc-500 mt-1">Resolution: {c.resolution}</div>}
                 </div>
                 <Badge status={c.status} />

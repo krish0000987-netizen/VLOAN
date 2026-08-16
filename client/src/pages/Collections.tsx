@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Phone, MapPin, HandCoins, ShieldAlert, Plus } from "lucide-react";
 import { api, fmtInr, fmtDate } from "../lib/api";
 import { PageHeader, Card, CardTitle, Badge, Stat, Tabs, Modal, Field, Progress } from "../components/ui";
+import { ImportExport } from "./gn/shared";
 
 export default function Collections() {
   const nav = useNavigate();
@@ -30,7 +31,9 @@ export default function Collections() {
 
   return (
     <div>
-      <PageHeader title="Collections" sub="Prioritized recovery queue · DPD & PTP management" breadcrumb="Collections" />
+      <PageHeader title="Collections" sub="Prioritized recovery queue · DPD & PTP management" breadcrumb="Collections" actions={
+        <div className="flex items-center gap-2"><ImportExport entity="collections" /></div>
+      } />
 
       {dash && (
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3 mb-5">

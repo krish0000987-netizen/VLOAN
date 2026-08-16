@@ -37,6 +37,39 @@ import AI from "./pages/AI";
 import Network from "./pages/Network";
 import Integrations from "./pages/Integrations";
 import Admin from "./pages/Admin";
+import { GnDashboard } from "./pages/gn/GnDashboard";
+import { GnApplications } from "./pages/gn/GnApplications";
+import { GnLeads } from "./pages/gn/GnLeads";
+import { GnSanction } from "./pages/gn/GnSanction";
+import { GnDisbursement } from "./pages/gn/GnDisbursement";
+import { GnCrossSelling } from "./pages/gn/GnCrossSelling";
+import { GnDirectBooking } from "./pages/gn/GnDirectBooking";
+import { GnWallet } from "./pages/gn/GnWallet";
+import { GnApis } from "./pages/gn/GnApis";
+import { GnTasks } from "./pages/gn/GnTasks";
+import { GnTools } from "./pages/gn/GnTools";
+import { GnUtility } from "./pages/gn/GnUtility";
+import { GnMasters } from "./pages/gn/GnMasters";
+import { GnConfiguration } from "./pages/gn/GnConfiguration";
+import { GnSettings } from "./pages/gn/GnSettings";
+import { GnRoles } from "./pages/gn/GnRoles";
+import { GnReports } from "./pages/gn/GnReports";
+import { GnLenders } from "./pages/gn/GnLenders";
+import { GnPartners } from "./pages/gn/GnPartners";
+import { GnFinance } from "./pages/gn/GnFinance";
+import { GnHR } from "./pages/gn/GnHR";
+import { GnMarketing } from "./pages/gn/GnMarketing";
+import { GnInbox } from "./pages/gn/GnInbox";
+import { GnDocs } from "./pages/gn/GnDocs";
+import { GnHelp } from "./pages/gn/GnHelp";
+import { GnChangelog } from "./pages/gn/GnChangelog";
+import { GnRecycleBin } from "./pages/gn/GnRecycleBin";
+import { GnOverview } from "./pages/gn/GnOverview";
+import { GnNewApplicant } from "./pages/gn/GnNewApplicant";
+import { GnApplicants } from "./pages/gn/GnApplicants";
+import { GnBulk } from "./pages/gn/GnBulk";
+import { GnApiCenter } from "./pages/gn/GnApiCenter";
+import { GnAnalytics } from "./pages/gn/GnAnalytics";
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -92,6 +125,39 @@ function App() {
           <Route path="/integrations" element={<Protected><Integrations /></Protected>} />
           <Route path="/admin" element={<Protected><Admin /></Protected>} />
           <Route path="/channel" element={<Protected><Channel /></Protected>} />
+          <Route path="/gn" element={<Protected><GnDashboard /></Protected>} />
+          <Route path="/gn/applications" element={<Protected><GnApplications /></Protected>} />
+          <Route path="/gn/leads" element={<Protected><GnLeads /></Protected>} />
+          <Route path="/gn/sanction" element={<Protected><GnSanction /></Protected>} />
+          <Route path="/gn/disbursement" element={<Protected><GnDisbursement /></Protected>} />
+          <Route path="/gn/cross-selling" element={<Protected><GnCrossSelling /></Protected>} />
+          <Route path="/gn/direct-booking" element={<Protected><GnDirectBooking /></Protected>} />
+          <Route path="/gn/wallet" element={<Protected><GnWallet /></Protected>} />
+          <Route path="/gn/apis" element={<Protected><GnApis /></Protected>} />
+          <Route path="/gn/tasks" element={<Protected><GnTasks /></Protected>} />
+          <Route path="/gn/tools" element={<Protected><GnTools /></Protected>} />
+          <Route path="/gn/utility" element={<Protected><GnUtility /></Protected>} />
+          <Route path="/gn/masters" element={<Protected><GnMasters /></Protected>} />
+          <Route path="/gn/configuration" element={<Protected><GnConfiguration /></Protected>} />
+          <Route path="/gn/settings" element={<Protected><GnSettings /></Protected>} />
+          <Route path="/gn/roles" element={<Protected><GnRoles /></Protected>} />
+          <Route path="/gn/reports" element={<Protected><GnReports /></Protected>} />
+          <Route path="/gn/lenders" element={<Protected><GnLenders /></Protected>} />
+          <Route path="/gn/partners" element={<Protected><GnPartners /></Protected>} />
+          <Route path="/gn/finance" element={<Protected><GnFinance /></Protected>} />
+          <Route path="/gn/hr" element={<Protected><GnHR /></Protected>} />
+          <Route path="/gn/co" element={<Protected><GnOverview /></Protected>} />
+          <Route path="/gn/co/new" element={<Protected><GnNewApplicant /></Protected>} />
+          <Route path="/gn/co/applicants" element={<Protected><GnApplicants /></Protected>} />
+          <Route path="/gn/co/bulk" element={<Protected><GnBulk /></Protected>} />
+          <Route path="/gn/co/api" element={<Protected><GnApiCenter /></Protected>} />
+          <Route path="/gn/co/analytics" element={<Protected><GnAnalytics /></Protected>} />
+          <Route path="/gn/marketing" element={<Protected><GnMarketing /></Protected>} />
+          <Route path="/gn/inbox" element={<Protected><GnInbox /></Protected>} />
+          <Route path="/gn/docs" element={<Protected><GnDocs /></Protected>} />
+          <Route path="/gn/help" element={<Protected><GnHelp /></Protected>} />
+          <Route path="/gn/changelog" element={<Protected><GnChangelog /></Protected>} />
+          <Route path="/gn/recycle-bin" element={<Protected><GnRecycleBin /></Protected>} />
           <Route path="/portal" element={<Protected><PortalDashboard /></Protected>} />
           <Route path="/portal/apply" element={<Protected><PortalApply /></Protected>} />
           <Route path="/portal/applications" element={<Protected><PortalApplications /></Protected>} />

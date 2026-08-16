@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, fmtDateTime } from "../lib/api";
 import { PageHeader, Card, Badge, DataTable, type Column } from "../components/ui";
+import { ImportExport } from "./gn/shared";
 
 export default function AuditLog() {
   const [data, setData] = useState<any>({ rows: [], total: 0 });
@@ -27,7 +28,7 @@ export default function AuditLog() {
 
   return (
     <div>
-      <PageHeader title="Audit trail" sub={`${data.total} immutable events — who, what, when, before/after`} breadcrumb="Compliance / Audit" />
+      <PageHeader title="Audit trail" sub={`${data.total} immutable events — who, what, when, before/after`} breadcrumb="Compliance / Audit" actions={<div className="flex items-center gap-2"><ImportExport entity="customers" /></div>} />
       <div className="mb-4 flex items-center gap-2 text-[11.5px] text-zinc-500 bg-white border border-zinc-200 rounded-lg px-3 py-2">
         <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
         Append-only ledger. Audit events are never updated or deleted — every sensitive action records actor, timestamp, IP and before/after state.

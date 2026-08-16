@@ -3,12 +3,15 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, PhoneCall, UserCircle2, FileText, ListChecks, ShieldCheck, Scale,
   Landmark, Wallet, HandCoins, Building2, BadgeCheck, ScrollText, BarChart3, BrainCircuit,
-  Settings2, Plug2, Search, Bell, LogOut, ChevronRight, Activity, AlertTriangle, FileSearch
+  Settings2, Plug2, Search, Bell, LogOut, ChevronRight, Activity, AlertTriangle, FileSearch,
+  Globe2, GitPullRequest, Store, Handshake, Coins, HeartPulse, Megaphone, RefreshCw, Zap, Calculator, SlidersHorizontal, ListTodo, Wrench,
+  UsersRound, UserPlus, Layers, Rocket, Plug, TrendingUp, Inbox, BookOpen, LifeBuoy, GitCommitHorizontal, Trash2
 } from "lucide-react";
 import { api, fmtDateTime, timeAgo } from "../lib/api";
 import { useAuth, ROLE_LABELS } from "../lib/auth";
+import { useGnPerms, matchesPerm } from "../lib/gn";
 
-type NavItem = { to: string; label: string; icon: any; end?: boolean };
+type NavItem = { to: string; label: string; icon: any; end?: boolean; perm?: string };
 type NavGroup = { section: string; items: NavItem[] };
 
 const NAV: NavGroup[] = [
@@ -36,6 +39,50 @@ const NAV: NavGroup[] = [
     ]
   },
   {
+    section: "GN Command Center", items: [
+      { to: "/gn/co", label: "Command Center", icon: Rocket, end: true, perm: "gn.co.view" },
+      { to: "/gn/co/new", label: "New Applicant", icon: UserPlus, perm: "gn.co.create" },
+      { to: "/gn/co/applicants", label: "Applicants", icon: UsersRound, perm: "gn.co.view" },
+      { to: "/gn/co/bulk", label: "Bulk Applications", icon: Layers, perm: "gn.bulk.view" },
+      { to: "/gn/co/api", label: "API Center", icon: Plug, perm: "gn.api.view" },
+      { to: "/gn/co/analytics", label: "Analytics", icon: TrendingUp, perm: "gn.co.view" }
+    ]
+  },
+  {
+    section: "Growth Nations — Distribution", items: [
+      { to: "/gn", label: "GN Dashboard", icon: Globe2, end: true, perm: "gn.view" },
+      { to: "/gn/applications", label: "Loan Applications", icon: GitPullRequest, perm: "gn.applications.view" },
+      { to: "/gn/leads", label: "Leads", icon: FileText, perm: "gn.leads.view" },
+      { to: "/gn/sanction", label: "Sanction", icon: BadgeCheck, perm: "gn.sanction.view" },
+      { to: "/gn/disbursement", label: "Disbursement", icon: Wallet, perm: "gn.disbursement.view" },
+      { to: "/gn/cross-selling", label: "Cross Selling", icon: RefreshCw, perm: "gn.applications.view" },
+      { to: "/gn/direct-booking", label: "Direct Booking", icon: Zap, perm: "gn.applications.view" },
+      { to: "/gn/masters", label: "Masters", icon: Store, perm: "gn.masters.view" },
+      { to: "/gn/partners", label: "Team / Partners", icon: Handshake, perm: "gn.masters.view" },
+      { to: "/gn/finance", label: "Finance", icon: Coins, perm: "gn.finance.view" },
+      { to: "/gn/hr", label: "HR & Workforce", icon: HeartPulse, perm: "gn.hr.view" },
+      { to: "/gn/marketing", label: "Marketing", icon: Megaphone, perm: "gn.marketing.view" },
+      { to: "/gn/tasks", label: "Tasks", icon: ListTodo, perm: "gn.tasks.view" },
+      { to: "/gn/tools", label: "Tools", icon: Calculator, perm: "gn.view" },
+      { to: "/gn/utility", label: "Utility", icon: Wrench, perm: "gn.utility.view" },
+      { to: "/gn/wallet", label: "Wallet", icon: Landmark, perm: "gn.finance.view" },
+      { to: "/gn/apis", label: "Verification APIs", icon: Plug2, perm: "gn.settings.view" },
+      { to: "/gn/configuration", label: "Configuration", icon: Settings2, perm: "gn.settings.view" },
+      { to: "/gn/roles", label: "Roles & Permissions", icon: ShieldCheck, perm: "gn.settings.view" },
+      { to: "/gn/settings", label: "Settings", icon: SlidersHorizontal, perm: "gn.settings.view" },
+      { to: "/gn/reports", label: "Reports", icon: BarChart3, perm: "gn.reports.view" }
+    ]
+  },
+  {
+    section: "Communication & Support", items: [
+      { to: "/gn/inbox", label: "Inbox", icon: Inbox, perm: "gn.inbox.view" },
+      { to: "/gn/docs", label: "Documentation", icon: BookOpen, perm: "gn.docs.view" },
+      { to: "/gn/help", label: "Help & FAQ", icon: LifeBuoy, perm: "gn.help.view" },
+      { to: "/gn/changelog", label: "Change Log", icon: GitCommitHorizontal, perm: "gn.changelog.view" },
+      { to: "/gn/recycle-bin", label: "Recycle Bin", icon: Trash2, perm: "gn.trash.view" }
+    ]
+  },
+  {
     section: "Compliance", items: [
       { to: "/compliance", label: "Compliance Center", icon: BadgeCheck },
       { to: "/audit", label: "Audit Trail", icon: ScrollText }
@@ -59,6 +106,8 @@ const NAV: NavGroup[] = [
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
+  const { me, loading: permsLoading } = useGnPerms();
+  const gnPerms = useMemo(() => new Set(me?.perms ?? []), [me]);
   const nav = useNavigate();
   const loc = useLocation();
   const [notifOpen, setNotifOpen] = useState(false);
@@ -100,13 +149,22 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   // Channel roles (DSA / field / telecaller) get their portal entry in CRM
   const navGroups = useMemo(() => {
+    let groups = NAV;
     if (["dsa", "field_executive", "telecaller", "sales_manager"].includes(user?.role || "")) {
-      return NAV.map((g) => (g.section === "CRM"
+      groups = groups.map((g) => (g.section === "CRM"
         ? { ...g, items: [...g.items, { to: "/channel", label: "My Channel Portal", icon: Building2 }] }
         : g));
     }
-    return NAV;
-  }, [user?.role]);
+    // Role-based dashboard: hide GN nav items the role's permission grid does not grant.
+    if (!permsLoading && gnPerms.size > 0) {
+      groups = groups.map((g) => {
+        if (g.section !== "Growth Nations — Distribution") return g;
+        const items = g.items.filter((i) => !i.perm || matchesPerm(gnPerms, i.perm));
+        return { ...g, items };
+      }).filter((g) => g.section !== "Growth Nations — Distribution" || g.items.length > 0);
+    }
+    return groups;
+  }, [user?.role, gnPerms, permsLoading]);
 
   const current = useMemo(() => {
     for (const g of navGroups) {

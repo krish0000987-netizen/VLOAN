@@ -2,6 +2,7 @@ import { q, q1, run, tx } from "./connection.js";
 import { createSchema, resetSchema } from "./schema.js";
 import { hashPassword } from "../core/auth.js";
 import { buildSchedule, computeEmi, computeDpd, allocatePayment, type AllocationComponent } from "../core/finance.js";
+import { seedGrowthNations } from "./seed-gn.js";
 
 /* Deterministic RNG so the demo portfolio is reproducible */
 function mulberry32(seed: number) {
@@ -722,6 +723,9 @@ export function seed() {
 
     /* --- AI history --- */
     run("INSERT INTO ai_recommendations (tenant_id, user_id, kind, prompt, result) VALUES (?, ?, 'query', 'What needs my attention today?', ?)", [tenantId, userIds[0], JSON.stringify({ intent: "attention", headline: "Demo AI — ready", items: [] })]);
+
+    /* --- Growth Nations distribution layer --- */
+    seedGrowthNations(tenantId, rng, customerRows, userIds);
 
     console.log(`[NEXUS SEED] done in ${((Date.now() - started) / 1000).toFixed(1)}s — tenant=${tenantId} customers=${customerRows.length} leads=1500 applications=${appSeqState.n} loans=${loanIds.length} installments=${installmentCount} payments=${paymentCount} collection_activities=${collectionCount} branches=30 users=${userIds.length} products=${productIds.length}`);
   });

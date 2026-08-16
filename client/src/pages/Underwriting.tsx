@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { UserCheck, Check, X, RotateCcw, ChevronRight } from "lucide-react";
 import { api, fmtInr, fmtDate, badgeFor, statusLabel } from "../lib/api";
 import { PageHeader, Card, Badge, Modal, Field, DataTable, type Column } from "../components/ui";
+import { ImportExport } from "./gn/shared";
 
 export default function Underwriting() {
   const nav = useNavigate();
@@ -47,7 +48,9 @@ export default function Underwriting() {
 
   return (
     <div>
-      <PageHeader title="Underwriting workbench" sub={`${reviewApps.length} applications awaiting credit decisions`} breadcrumb="LOS / Underwriting" actions={<button className="btn btn-secondary" onClick={load}><RotateCcw size={13} /> Refresh</button>} />
+      <PageHeader title="Underwriting workbench" sub={`${reviewApps.length} applications awaiting credit decisions`} breadcrumb="LOS / Underwriting" actions={
+        <div className="flex items-center gap-2"><ImportExport entity="los_apps" /><button className="btn btn-secondary" onClick={load}><RotateCcw size={13} /> Refresh</button></div>
+      } />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <Card className="p-3"><div className="text-[10.5px] uppercase text-zinc-400 font-medium">Awaiting decision</div><div className="text-[20px] font-semibold num mt-1">{reviewApps.length}</div></Card>

@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { useNavigate } from "react-router-dom";
 import { api, fmtInr, fmtDate } from "../lib/api";
 import { PageHeader, Card, CardTitle, Badge, DataTable, type Column } from "../components/ui";
+import { ImportExport } from "./gn/shared";
 
 export default function Reports() {
   const nav = useNavigate();
@@ -60,7 +61,11 @@ export default function Reports() {
 
   return (
     <div>
-      <PageHeader title="Enterprise reports" sub="Sales · LOS · Credit · LMS · Collections · Finance — every module reportable" breadcrumb="Intelligence / Reports" />
+      <PageHeader title="Enterprise reports" sub="Sales · LOS · Credit · LMS · Collections · Finance — every module reportable" breadcrumb="Intelligence / Reports" actions={
+        <div className="flex items-center gap-2">
+          <ImportExport entity="customers" /><ImportExport entity="loans" /><ImportExport entity="payments" />
+        </div>
+      } />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-5">
         <Card>

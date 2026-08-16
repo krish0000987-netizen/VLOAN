@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { AlertTriangle, TrendingUp, ShieldAlert, Fingerprint } from "lucide-react";
 import { api, fmtInr, fmtDate } from "../lib/api";
 import { PageHeader, Card, CardTitle, Badge, Stat } from "../components/ui";
+import { ImportExport } from "./gn/shared";
 
 const GRADE_COLORS: Record<string, string> = { low: "#059669", standard: "#0284c7", medium: "#d97706", high: "#e11d48", unknown: "#a1a1aa" };
 
@@ -19,7 +20,7 @@ export default function Risk() {
 
   return (
     <div>
-      <PageHeader title="Portfolio risk" sub="Concentration · early warning · fraud surveillance across the book" breadcrumb="Intelligence / Risk" />
+      <PageHeader title="Portfolio risk" sub="Concentration · early warning · fraud surveillance across the book" breadcrumb="Intelligence / Risk" actions={<div className="flex items-center gap-2"><ImportExport entity="loans" /><ImportExport entity="customers" /></div>} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <Stat label="Risk grades tracked" value={data.riskGrades?.length ?? 0} />
