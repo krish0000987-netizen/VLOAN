@@ -1,5 +1,10 @@
 const TOKEN_KEY = "nexus_token";
 
+// Base URL for the API. Defaults to the same origin (relative /api, proxied by
+// the Vite dev server). Set VITE_API_BASE to point the built app at a
+// separately hosted API, e.g. VITE_API_BASE=https://loanserver.vercel.app.
+const API_BASE: string = (import.meta as any).env?.VITE_API_BASE ?? "";
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -19,7 +24,7 @@ export class ApiError extends Error {
 }
 
 export async function api<T = any>(path: string, opts: { method?: string; body?: unknown } = {}): Promise<T> {
-  const res = await fetch("/api" + path, {
+  const res = await fetch(API_BASE + "/api" + path, {
     method: opts.method ?? "GET",
     headers: {
       "Content-Type": "application/json",

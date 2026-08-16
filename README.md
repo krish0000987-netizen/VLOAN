@@ -73,6 +73,22 @@ npm run dev:server  # API only
 npm run dev:client  # web only
 ```
 
+## Deploying on Vercel (demo)
+
+The repo has two deployables (npm workspaces). Serverless hosts have a read-only
+filesystem except `/tmp`, and the SQLite DB is **ephemeral there** — it is
+re-provisioned from a committed demo snapshot on every cold start. That is
+expected for the demo environment; persistent storage would need a hosted
+Postgres instead.
+
+- **API** — Vercel project rooted at `server/` (Express preset, entry `src/index.ts`).
+  - Requires Node ≥ 22.13 for `node:sqlite`; pinned via `"engines": { "node": "22.x" }` in `server/package.json`.
+  - `server/src/db/connection.ts` copies the committed demo DB (`server/demo-data/nexus.db`, ~11 MB) into `/tmp/nexus` on cold start — milliseconds, not the ~11 s reseed — and falls back to on-boot seeding if the file isn't bundled. `NEXUS_DB` always overrides.
+  - Health check: `GET /api/health`.
+- **Web app** — Vercel project rooted at `client/` (Vite preset, `npm run build`).
+  Set `VITE_API_BASE` to the API origin (e.g. `https://loanserver.vercel.app`) so the
+  built app calls the hosted API; leave it unset locally (Vite proxies `/api` → `:8787`).
+
 ## Notes
 
 - SQLite database lives at `server/data/nexus.db` (WAL mode). Reset anytime with `npm run seed -- reset`.

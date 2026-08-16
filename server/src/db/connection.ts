@@ -1,17 +1,33 @@
 import { DatabaseSync } from "node:sqlite";
-import { mkdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
+ * Locate the prebuilt demo DB inside the deployment bundle. The bundler may
+ * flatten the server tree, so try the source layout plus a few bundle layouts.
+ */
+function findDemoDb(): string | null {
+  const candidates = [
+    path.join(__dirname, "../../demo-data/nexus.db"),
+    path.join(__dirname, "../../../demo-data/nexus.db"),
+    path.join(process.cwd(), "demo-data/nexus.db"),
+    path.join(process.cwd(), "server/demo-data/nexus.db")
+  ];
+  for (const c of candidates) {
+    if (existsSync(c)) return c;
+  }
+  return null;
+}
+
+/**
  * Pick a writable directory for the SQLite file.
  *
  * - `NEXUS_DB` (env) always wins when set — tests point it at a temp file.
  * - On Vercel the project directory is read-only (only `/tmp` is writable), so
- *   use `/tmp` there. It is ephemeral, but the app re-creates schema and demo
- *   seed on every cold start (`createApp` → `createSchema`/`seedIfEmpty`).
+ *   use `/tmp` there. It is ephemeral, but the demo DB is copied in on boot.
  * - Locally, keep the SQLite file under `server/data/` as before.
  */
 function resolveDataDir(): string {
@@ -29,8 +45,24 @@ function resolveDataDir(): string {
 }
 
 const DATA_DIR = resolveDataDir();
+let dbPath = process.env.NEXUS_DB || path.join(DATA_DIR, "nexus.db");
 
-export const DB_PATH = process.env.NEXUS_DB || path.join(DATA_DIR, "nexus.db");
+// Fast serverless cold start: copy the committed demo DB into the writable dir
+// (a ~21 MB file copy, not an ~11 s reseed). Falls back to boot-time seeding
+// (`createApp` → `createSchema`/`seedIfEmpty`) when no demo DB is bundled.
+if (!process.env.NEXUS_DB && !existsSync(dbPath)) {
+  const demo = findDemoDb();
+  if (demo) {
+    try {
+      mkdirSync(DATA_DIR, { recursive: true });
+      copyFileSync(demo, dbPath);
+    } catch {
+      // Not writable / not bundled — boot-time seeding will handle it.
+    }
+  }
+}
+
+export const DB_PATH = dbPath;
 
 const _db = new DatabaseSync(DB_PATH);
 try {
