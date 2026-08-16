@@ -62,3 +62,9 @@ export function createApp() {
   app.use(errorHandler);
   return app;
 }
+
+// Vercel's Express preset imports `src/app.ts` directly and requires the
+// module's default export to be the Express app (it never runs `src/index.ts`).
+// Locally and in tests only the named `createApp()` is used, so keep the default
+// export null outside Vercel to avoid an extra boot-time schema/seed pass.
+export default process.env.VERCEL ? createApp() : null;
