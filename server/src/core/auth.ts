@@ -1,5 +1,10 @@
-import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import { q1, run, now } from "../db/connection.js";
+import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { q1 } from "../db/connection.js";
+
+// Secret for stateless session tokens. The demo defaults to a fixed value so
+// every serverless instance validates the same tokens; production must set a
+// strong NEXUS_AUTH_SECRET (e.g. via Vercel env vars).
+const AUTH_SECRET = process.env.NEXUS_AUTH_SECRET || "nexus-demo-auth-secret";
 
 export function hashPassword(pw: string): string {
   const salt = randomBytes(16).toString("hex");
@@ -15,11 +20,20 @@ export function verifyPassword(pw: string, stored: string): boolean {
   return candidate.length === expected.length && timingSafeEqual(candidate, expected);
 }
 
+/**
+ * Issue a stateless, HMAC-signed session token (payload.signature). Sessions
+ * are NOT stored in the DB, so any serverless instance (each with its own
+ * ephemeral SQLite copy) can validate tokens created by another instance.
+ */
 export function createSession(userId: number): string {
-  const token = randomBytes(32).toString("hex");
-  const expires = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString();
-  run("INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)", [userId, token, expires]);
-  return token;
+  const payload = Buffer.from(
+    JSON.stringify({ uid: userId, exp: Date.now() + 30 * 24 * 3600 * 1000 })
+  ).toString("base64url");
+  return `${payload}.${signPayload(payload)}`;
+}
+
+function signPayload(payload: string): string {
+  return createHmac("sha256", AUTH_SECRET).update(payload).digest("base64url");
 }
 
 export interface SessionUser {
@@ -35,17 +49,30 @@ export interface SessionUser {
 
 export function getUserFromToken(token: string | undefined): SessionUser | null {
   if (!token) return null;
-  const row = q1<SessionUser>(
-    `SELECT u.id, u.tenant_id, u.branch_id, u.name, u.email, u.role, u.phone, u.customer_id
-     FROM sessions s JOIN users u ON u.id = s.user_id
-     WHERE s.token = ? AND s.expires_at > ?`,
-    [token, now()]
+  const [payload, sig] = token.split(".");
+  if (!payload || !sig) return null;
+  const expected = signPayload(payload);
+  const a = Buffer.from(sig);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  let data: { uid: number; exp: number };
+  try {
+    data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
+  if (typeof data.uid !== "number" || typeof data.exp !== "number" || data.exp < Date.now()) return null;
+  return (
+    q1<SessionUser>(
+      `SELECT id, tenant_id, branch_id, name, email, role, phone, customer_id
+       FROM users WHERE id = ?`,
+      [data.uid]
+    ) ?? null
   );
-  return row ?? null;
 }
 
-export function destroySession(token: string) {
-  run("DELETE FROM sessions WHERE token = ?", [token]);
+export function destroySession(_token: string) {
+  // Stateless tokens — nothing to revoke server-side.
 }
 
 /* ---------------- RBAC ---------------- */
